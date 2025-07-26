@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOBE Game Invite</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #00FFCD;
+      --secondary: #0099FF;
+      --accent: #FF00AA;
+      --dark: #0A0A2A;
+      --light: #E0F8FF;
+      --success: #00C853;
+      --danger: #FF1744;
+      --warning: #FFC107;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: var(--light);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .invite-container {
+      background: rgba(10, 10, 42, 0.9);
+      border-radius: 15px;
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0, 153, 255, 0.3);
+      border: 1px solid var(--primary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .game-icon {
+      font-size: 4rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    
+    h1 {
+      color: var(--primary);
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px rgba(0, 255, 205, 0.5);
+    }
+    
+    p {
+      color: var(--secondary);
+      margin-bottom: 25px;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 160px;
+      justify-content: center;
+    }
+    
+    .btn-accept {
+      background: var(--success);
+      color: white;
+    }
+    
+    .btn-reject {
+      background: var(--danger);
+      color: white;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .game-id {
+      margin: 20px 0;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      font-family: monospace;
+      word-break: break-all;
+      font-size: 0.9rem;
+    }
+    
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    
+    .status-error {
+      background: rgba(255, 23, 68, 0.2);
+      border: 1px solid var(--danger);
+      color: var(--light);
+    }
+    
+    .status-success {
+      background: rgba(0, 200, 83, 0.2);
+      border: 1px solid var(--success);
+      color: var(--light);
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    @media (max-width: 600px) {
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .invite-container {
+        padding: 20px;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="invite-container">
+    <div class="game-icon">
+      <i class="fas fa-gamepad"></i>
+    </div>
+    <h1>MOBE GAME INVITE</h1>
+    <p>You've been invited to join an exciting MOBE game session!</p>
+    
+    <div id="gameIdDisplay" class="game-id">Loading game session...</div>
+    
+    <div id="statusMessage" class="status-message"></div>
+    
+    <div class="btn-group">
+      <button id="acceptBtn" class="btn btn-accept">
+        <i class="fas fa-check"></i> Accept Invite
+      </button>
+      <button id="rejectBtn" class="btn btn-reject">
+        <i class="fas fa-times"></i> Reject Invite
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const gameIdDisplay = document.getElementById('gameIdDisplay');
+    const acceptBtn = document.getElementById('acceptBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    
+    // Get game ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let gameId = urlParams.get('id');
+    
+    // Prevent back button navigation
+    history.pushState(null, null, location.href);
+    window.onpopstate = function() {
+      history.go(1);
+    };
+    
+    // Initialize
+    if (!gameId) {
+      // If no game ID, create a new session
+      fetch('/new', { redirect: 'manual' })
+        .then(() => {
+          window.location.href = '/new';
+        })
+        .catch(err => {
+          showError('Failed to create game session. Please try again.');
+        });
+    } else {
+      // Validate existing game ID
+      gameIdDisplay.textContent = `Game ID: ${gameId}`;
+      setupButtonHandlers();
+    }
+    
+    function setupButtonHandlers() {
+      // Accept button handler
+      acceptBtn.addEventListener('click', () => {
+        window.location.href = `/respond?gameId=${gameId}&response=accept`;
+      });
+      
+      // Reject button handler
+      rejectBtn.addEventListener('click', () => {
+        // First try to notify server
+        fetch(`/respond?gameId=${gameId}&response=reject`, { redirect: 'manual' })
+          .then(() => {
+            // Then try to close the window
+            try {
+              window.close();
+            } catch (e) {
+              // If window can't be closed, show message
+              document.body.innerHTML = `
+                <div class="invite-container">
+                  <h1 style="color: var(--danger);">Invite Rejected</h1>
+                  <p>This game session has been permanently closed.</p>
+                  <p>Please close this window.</p>
+                  <div class="game-id">${gameId}</div>
+                  <p style="color: var(--warning);">Invalid session - cannot be reused</p>
+                </div>
+              `;
+            }
+          })
+          .catch(err => {
+            showError('Failed to reject invite. Please try again.');
+          });
+      });
+    }
+    
+    function showError(message) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message status-error';
+      statusMessage.style.display = 'block';
+    }
+    
+    function showSuccess(message) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message status-success';
+      statusMessage.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

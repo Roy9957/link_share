@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Session Rejected</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #E0F8FF;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      background: rgba(10, 10, 42, 0.9);
+      border: 1px solid #FF1744;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      box-shadow: 0 0 30px rgba(255, 23, 68, 0.3);
+    }
+    h1 {
+      color: #FF1744;
+      margin-bottom: 20px;
+    }
+    p {
+      margin-bottom: 25px;
+    }
+    .game-id {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      margin: 20px 0;
+      word-break: break-all;
+    }
+  </style>
+  <script>
+    // Try to close window automatically
+    setTimeout(() => {
+      try {
+        window.close();
+      } catch (e) {
+        document.getElementById('close-message').style.display = 'block';
+      }
+    }, 2000);
+
+    // Prevent back navigation
+    history.pushState(null, null, location.href);
+    window.onpopstate = function() {
+      history.go(1);
+    };
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-ban"></i> Session Closed</h1>
+    <p>You have rejected the game invite.</p>
+    <div class="game-id">Session ID: <%= gameId %></div>
+    <p>This session has been permanently terminated.</p>
+    <p id="close-message" style="display: none; color: #FFC107;">
+      <i class="fas fa-exclamation-circle"></i> Please close this window manually.
+    </p>
+  </div>
+</body>
+</html>
