@@ -71,7 +71,7 @@ app.get('/respond', (req, res) => {
 
   try {
     if (response === 'accept') {
-      res.redirect('https://www.mobe-game.rf.gd/lobby');
+      res.redirect('https://www.mobe-game.rf.gd/game');
     } else {
       ACTIVE_SESSIONS.delete(gameId);
       res.sendFile(path.join(__dirname, 'public', 'rejected.html'));
